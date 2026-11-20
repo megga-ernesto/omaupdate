@@ -602,12 +602,12 @@ def run_plan(plan, report=None):
     return status
 
 
-def ask(prompt, tone="prompt"):
+def ask(prompt, tone="prompt", *, default_yes=True):
     gum = shutil.which("gum")
     if gum and os.isatty(0) and os.isatty(1) and os.environ.get("TERM") != "dumb":
         print(t("cli.continueHint"), flush=True)
         command = [
-            gum, "confirm", "--default=true", "--timeout=0s", "--no-show-help",
+            gum, "confirm", f"--default={str(default_yes).lower()}", "--timeout=0s", "--no-show-help",
             "--prompt.foreground", terminal_color(tone),
             "--affirmative", t("cli.yes"), "--negative", t("cli.no"), "--", prompt,
         ]
@@ -630,11 +630,13 @@ def ask(prompt, tone="prompt"):
         except OSError:
             return False
 
+    choices = "cli.confirmChoices" if default_yes else "cli.confirmChoicesDefaultNo"
     try:
-        answer = input(styled(prompt, tone) + " " + t("cli.confirmChoices"))
+        answer = input(styled(prompt, tone) + " " + t(choices))
     except EOFError:
         return False
-    return answer.strip().casefold() in {"", "s", "sí", "si", "y", "yes"}
+    answer = answer.strip().casefold()
+    return default_yes if not answer else answer in {"s", "sí", "si", "y", "yes"}
 
 
 def steam_may_be_installed():
@@ -770,7 +772,7 @@ def cleanup(report):
         status = status or result
 
     if has_trash:
-        if ask("\n" + t("cli.trashConfirm"), "error"):
+        if ask("\n" + t("cli.trashConfirm"), "error", default_yes=False):
             result = run_plan([(("gio", "trash", "--empty"), "")], report)
             if result == 130:
                 return result

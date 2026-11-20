@@ -53,6 +53,7 @@
   "cli.continueHint": "Use ← and → to choose, then press Enter to confirm.",
   "cli.updateConfirm": "Apply updates?",
   "cli.confirmChoices": "[Y/n] ",
+  "cli.confirmChoicesDefaultNo": "[y/N] ",
   "cli.description": "Runs installed updaters after you confirm the plan.",
   "cli.holdHelp": "Wait before closing a new terminal window.",
   "cli.requiresTerminal": "Updating requires an interactive terminal",

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "elmegga.omaupdate",
   "name": "ElMeGGa OmaUpdate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "ElMeGGa",
   "description": "Scan, compare, and apply Omarchy, Arch, AUR, mise, Flatpak, and Snap updates from the bar.",
   "kinds": [

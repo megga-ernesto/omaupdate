@@ -40,7 +40,7 @@ omaupdate --last-run
 - **Update** presents a plan before running Flatpak user and system updates, Snap refresh, and `omarchy update`. Omarchy handles pacman, AUR, mise, and its own migrations. Missing managers are reported and processing continues.
 - **Install** offers the relevant Omarchy package command for a missing manager. Installing Snap uses AUR and enables the snapd socket. Install and update commands can ask for administrator privileges in the terminal.
 - Cleanup is offered after the update commands finish without errors. It can prune older pacman cache entries, remove unused Flatpak references, and clear mise caches or remove unused tool versions. Local Steam libraries are only offered for review when Steam appears to be absent. Moving a library to the Trash and permanently emptying the Trash are separate choices.
-- The interactive selector uses Gum when available. **Yes** is highlighted by default, including on the Trash prompt. Use the arrow keys to select **No** before pressing Enter to decline.
+- The interactive selector uses Gum when available. **Yes** is highlighted by default for updates and other prompts. **No** is highlighted when permanently emptying the Trash. Use the arrow keys to change the selection before pressing Enter.
 - The panel and terminal have English and Spanish translations selected from the session locale. The last update report is saved to `${XDG_STATE_HOME:-$HOME/.local/state}/omaupdate/last-run.txt`.
 
 The plugin is an independent community project. It uses Omarchy and the selected package managers on the local machine. Its own code does not send the update report to a remote service.
