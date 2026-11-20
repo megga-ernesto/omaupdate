@@ -16,6 +16,6 @@
     "description": "Omarchy, pacman, AUR, mise, Flatpak y Snap",
     "category": "System",
     "allowMultiple": false,
-    "defaultSection": "centerEnd"
+    "defaultSection": "center"
   }
 }
