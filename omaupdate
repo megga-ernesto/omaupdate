@@ -1,0 +1,11 @@
+#!/bin/sh
+plugin="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/plugins/elmegga.omaupdate"
+if [ ! -r "$plugin/updates.py" ]; then
+    case "${LC_ALL:-${LC_MESSAGES:-${LANG:-C}}}" in
+        es|es[_-]*|es.*|es@*) message='No se encontró el complemento OmaUpdate de Omarchy.' ;;
+        *) message='The OmaUpdate plugin could not be found.' ;;
+    esac
+    printf '%s\n' "$message" >&2
+    exit 1
+fi
+exec python3 "$plugin/updates.py" apply "$@"

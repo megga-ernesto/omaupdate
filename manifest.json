@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "elmegga.omaupdate",
+  "name": "ElMeGGa OmaUpdate",
+  "version": "1.0.0",
+  "author": "ElMeGGa",
+  "description": "Scan, compare, and apply Omarchy, Arch, AUR, mise, Flatpak, and Snap updates from the bar.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "ElMeGGa OmaUpdate",
+    "description": "Omarchy, pacman, AUR, mise, Flatpak y Snap",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "centerEnd"
+  }
+}
