@@ -97,5 +97,12 @@
   "cli.summaryWithWarnings": "Session finished with warnings.",
   "cli.summaryStopped": "Session interrupted.",
   "cli.miseUpdateWarning": "Omarchy reported that some mise tools could not be updated.",
-  "cli.aurUpdateWarning": "Omarchy skipped AUR because it was unavailable."
+  "cli.aurUpdateWarning": "Omarchy skipped AUR because it was unavailable.",
+  "settings": "Settings",
+  "closeSettings": "Close settings",
+  "scanSettings": "Scanning",
+  "appearance": "Appearance",
+  "glassFinish": "Glass finish",
+  "blurBackdrop": "Blur backdrop",
+  "blurFailed": "Hyprland could not apply backdrop blur."
 }

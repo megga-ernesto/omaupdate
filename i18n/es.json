@@ -97,5 +97,12 @@
   "cli.summaryWithWarnings": "Fin de la sesión, con avisos.",
   "cli.summaryStopped": "Sesión interrumpida.",
   "cli.miseUpdateWarning": "Omarchy avisó que algunas herramientas de mise no pudieron actualizarse.",
-  "cli.aurUpdateWarning": "Omarchy omitió AUR porque no estaba disponible."
+  "cli.aurUpdateWarning": "Omarchy omitió AUR porque no estaba disponible.",
+  "settings": "Ajustes",
+  "closeSettings": "Cerrar ajustes",
+  "scanSettings": "Escaneo",
+  "appearance": "Apariencia",
+  "glassFinish": "Acabado de cristal",
+  "blurBackdrop": "Difuminar el fondo",
+  "blurFailed": "Hyprland no pudo aplicar el desenfoque."
 }

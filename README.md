@@ -2,9 +2,7 @@
 
 A status-bar update manager for **Omarchy**. It compares installed and available versions, highlights changed version segments, and opens a floating terminal for updates.
 
-![OmaUpdate widget showing update sources and scan frequency](preview.png)
-
-[Update confirmation](screenshots/omaupdate-confirmacion.png) · [Final report and cleanup](screenshots/omaupdate-final.png)
+![OmaUpdate in glass, blurred glass, and solid finishes](preview.jpg)
 
 ## Install
 
@@ -14,9 +12,11 @@ Requires Omarchy with the Quattro shell and Python 3.11 or newer. Tested on Omar
 omarchy plugin add https://github.com/megga-ernesto/omaupdate.git --enable
 ```
 
-Open the widget from the bar and select **Check** to scan immediately. The default 30-minute scan queries the installed managers over the network. Select **Manual** in the frequency menu to disable automatic scans.
+Open the widget from the bar and select **Check** to scan immediately. The default 30-minute scan queries the installed managers over the network. Open **Settings** from the gear and select **Manual** under **Scanning** to disable automatic scans.
 
 The icon and counter change color as the number of updates grows. Recognized kernel, graphics-driver, and core system packages are flagged as important by package name. This indicator does not evaluate security advisories.
+
+Choose **Glass finish** under **Appearance** to make both panels translucent. **Blur backdrop** optionally blurs the desktop behind them on Hyprland. The widget limits the blur rule to its own popup and restores the previous compositor setting when it closes.
 
 ## Terminal command
 
@@ -41,7 +41,7 @@ omaupdate --last-run
 - **Install** offers the relevant Omarchy package command for a missing manager. Installing Snap uses AUR and enables the snapd socket. Install and update commands can ask for administrator privileges in the terminal.
 - Cleanup is offered after the update commands finish without errors. It can prune older pacman cache entries, remove unused Flatpak references, and clear mise caches or remove unused tool versions. Local Steam libraries are only offered for review when Steam appears to be absent. Moving a library to the Trash and permanently emptying the Trash are separate choices.
 - The interactive selector uses Gum when available. **Yes** is highlighted by default for updates and other prompts. **No** is highlighted when permanently emptying the Trash. Use the arrow keys to change the selection before pressing Enter.
-- The panel and terminal have English and Spanish translations selected from the session locale. The last update report is saved to `${XDG_STATE_HOME:-$HOME/.local/state}/omaupdate/last-run.txt`.
+- The panel follows the language set in Omarchy, and the terminal follows the session locale. Both include English and Spanish translations. The last update report is saved to `${XDG_STATE_HOME:-$HOME/.local/state}/omaupdate/last-run.txt`.
 
 The plugin is an independent community project. It uses Omarchy and the selected package managers on the local machine. Its own code does not send the update report to a remote service.
 
