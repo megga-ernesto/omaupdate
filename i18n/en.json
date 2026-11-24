@@ -104,5 +104,14 @@
   "appearance": "Appearance",
   "glassFinish": "Glass finish",
   "blurBackdrop": "Blur backdrop",
-  "blurFailed": "Hyprland could not apply backdrop blur."
+  "blurFailed": "Hyprland could not apply backdrop blur.",
+  "oma.base": "Base",
+  "oma.glass": "Glass",
+  "oma.blur": "Blur",
+  "oma.saveFailed": "Could not save the appearance.",
+  "oma.materialFailed": "This shell can only display the base finish.",
+  "oma.blurFailed": "Showing glass. Hyprland backdrop blur is unavailable.",
+  "oma.settings": "Settings",
+  "oma.closeSettings": "Close settings",
+  "oma.appearance": "Appearance"
 }

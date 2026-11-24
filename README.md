@@ -2,7 +2,17 @@
 
 A status-bar update manager for **Omarchy**. It compares installed and available versions, highlights changed version segments, and opens a floating terminal for updates.
 
-![OmaUpdate in glass, blurred glass, and solid finishes](preview.jpg)
+![OmaUpdate in Base, Glass and Blur](preview.jpg)
+
+*Panels rendered from the plugin with sample data and the Rubí OLED palette. The background blur is simulated in the preview.*
+
+## Features
+
+- Check Arch and AUR packages, mise tools, Flatpak applications and runtimes, and Snap packages. AppImages appear in a separate local inventory.
+- Compare installed and available versions, highlight the changed segments, and flag recognized kernel, graphics and core system packages.
+- Scan on demand or on a schedule from 30 minutes to 24 hours.
+- Review a plan in a floating terminal, apply updates, and review optional cleanup. Access the last saved report using `omaupdate --last-run`.
+- See available, up-to-date, unavailable or failed sources and open installation prompts for supported missing tools.
 
 ## Install
 
@@ -16,7 +26,19 @@ Open the widget from the bar and select **Check** to scan immediately. The defau
 
 The icon and counter change color as the number of updates grows. Recognized kernel, graphics-driver, and core system packages are flagged as important by package name. This indicator does not evaluate security advisories.
 
-Choose **Glass finish** under **Appearance** to make both panels translucent. **Blur backdrop** optionally blurs the desktop behind them on Hyprland. The widget limits the blur rule to its own popup and restores the previous compositor setting when it closes.
+## Appearance
+
+Choose a finish in **Settings → Appearance**.
+
+| Finish | Appearance |
+|---|---|
+| **Base** | Uses the active Omarchy popup colors, transparency and compositor rules. |
+| **Glass** | Adds a translucent vertical gradient using 6%, 3% and 0% of the theme accent from top to bottom. |
+| **Blur** | Uses the Glass gradient and asks Hyprland to soften the wallpaper and windows behind the panel. |
+
+If Hyprland cannot apply Blur, the panel displays Glass and explains why in Appearance.
+
+![OmaUpdate appearance and scan frequency settings](docs/appearance-settings.webp)
 
 ## Terminal command
 
@@ -45,7 +67,9 @@ omaupdate --last-run
 
 The plugin is an independent community project. It uses Omarchy and the selected package managers on the local machine. Its own code does not send the update report to a remote service.
 
-## Remove
+## Update or remove the plugin
+
+Update the plugin itself from GitHub with `omarchy plugin update elmegga.omaupdate`. To remove it:
 
 ```sh
 omarchy plugin remove elmegga.omaupdate
