@@ -113,5 +113,20 @@
   "oma.blurFailed": "Showing glass. Hyprland backdrop blur is unavailable.",
   "oma.settings": "Settings",
   "oma.closeSettings": "Close settings",
-  "oma.appearance": "Appearance"
+  "oma.appearance": "Appearance",
+  "source.plugins": "Omarchy plugins",
+  "source.themes": "Omarchy themes",
+  "unmanaged": "No Git-managed installations",
+  "addonCheckSkipped": "Could not check or found local changes in: {names}",
+  "cli.planAddons": "If Git-installed themes or plugins have updates, you can review the list and choose whether to apply them.",
+  "cli.addonsConfirm": "Update {source}?",
+  "cli.cleanupFreed": "Net free space after cleanup · about {size}.",
+  "cli.cleanupNoGain": "Free space after cleanup · no measurable net increase.",
+  "cli.cleanupSpaceUnknown": "Could not measure available space after cleanup.",
+  "cli.rebootOmarchy": "Reboot recommended · Omarchy has a pending reboot.",
+  "cli.rebootKernel": "Reboot recommended · the running kernel differs from the installed kernels.",
+  "cli.rebootHyprland": "Reboot recommended · the running Hyprland executable was updated.",
+  "cli.rebootNotNeeded": "Reboot · no need detected.",
+  "cli.rebootUnknown": "Reboot · unable to determine whether it is needed.",
+  "cli.rebootSystemUnfinished": "Reboot · check the result of the Omarchy update before rebooting."
 }

@@ -62,10 +62,10 @@ def t(key, **values):
     return MESSAGES.get(key, key).format(**values)
 
 
-def query(command, accepted=(0,), extra_env=None):
+def query(command, accepted=(0,), extra_env=None, timeout="75s"):
     env = {**os.environ, "LC_ALL": "C", **(extra_env or {})}
     result = subprocess.run(
-        ["timeout", "--kill-after=3s", "75s", *command],
+        ["timeout", "--kill-after=3s", timeout, *command],
         cwd=HOME, env=env, stdin=subprocess.DEVNULL,
         capture_output=True, text=True, errors="replace",
     )
@@ -296,8 +296,103 @@ def appimages():
     return row("AppImage", "manual", map(version_update, sorted(files, key=str.casefold)))
 
 
+PLUGIN_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+GIT_QUERY_ENV = {"GIT_TERMINAL_PROMPT": "0", "GIT_SSH_COMMAND": "ssh -oBatchMode=yes"}
+
+
+def addon_candidate(directory, kind):
+    def git(*args):
+        return query(["git", "-C", str(directory), *args],
+                     extra_env=GIT_QUERY_ENV, timeout="15s").strip()
+
+    if kind == "plugins":
+        remote, ref = "origin", "HEAD"
+    else:
+        branch = git("symbolic-ref", "HEAD")
+        remote, ref = git("for-each-ref", "--format=%(upstream:remotename) %(upstream:remoteref)", branch).split()
+    if remote.startswith("-") or (ref != "HEAD" and not ref.startswith("refs/heads/")):
+        raise ValueError("Invalid upstream")
+    current = git("rev-parse", "HEAD")
+    available, advertised_ref = git("ls-remote", "--exit-code", "--", remote, ref).split()
+    if advertised_ref != ref or not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", available):
+        raise ValueError("Invalid upstream revision")
+    if current == available:
+        return None
+    git("fetch", "--quiet", "--no-tags", "--no-recurse-submodules", "--no-write-fetch-head",
+        "--refmap=", "--", remote, ref)
+    ahead, behind = map(int, git("rev-list", "--left-right", "--count",
+                                f"{current}...{available}").split())
+    if not behind:
+        return None
+    if ahead or git("status", "--porcelain"):
+        raise ValueError("Local changes or divergent branch")
+    command = (("omarchy", "plugin", "update", directory.name, "--yes") if kind == "plugins"
+               else ("git", "-C", str(directory), "merge", "--ff-only", available))
+    return version_update(directory.name, current[:8], available[:8], change="revision"), command
+
+
+def addon_updates(kind):
+    root = HOME / ".config/omarchy" / kind
+    directories = sorted(
+        path for path in root.glob("*")
+        if not path.name.startswith(".") and not path.is_symlink()
+        and (path / ".git").is_dir() and not (path / ".git").is_symlink()
+    )
+    updates, skipped = [], []
+    for directory in directories:
+        name = directory.name
+        if kind == "plugins" and (not PLUGIN_ID.fullmatch(name) or ".." in name):
+            continue
+        try:
+            candidate = addon_candidate(directory, kind)
+            if candidate:
+                updates.append(candidate)
+        except (OSError, ValueError):
+            skipped.append(name)
+    return updates, skipped, bool(directories)
+
+
+def addon_row(kind):
+    updates, skipped, present = addon_updates(kind)
+    status = "pending" if updates else "error" if skipped else "current" if present else "unmanaged"
+    detail = t("addonCheckSkipped", names=", ".join(skipped)) if skipped else ""
+    return row(kind, status, (item for item, _ in updates), detail, kind if present else "")
+
+
+def update_addons(report):
+    status = 0
+    for kind in ("plugins", "themes"):
+        updates, skipped, _ = addon_updates(kind)
+        if skipped:
+            report.warned = True
+            report.record(t("addonCheckSkipped", names=", ".join(skipped)), "warning")
+        if not updates:
+            continue
+        print("\n" + t("source." + kind))
+        for item, _ in updates:
+            print("  › " + item["name"])
+        if not ask(t("cli.addonsConfirm", source=t("source." + kind)), default_yes=False):
+            report.record(t("cli.summaryDeclined", step=t("source." + kind)), "warning")
+            continue
+        for item, command in updates:
+            directory = HOME / ".config/omarchy" / kind / item["name"]
+            try:
+                dirty = query(["git", "-C", str(directory), "status", "--porcelain"])
+            except (ValueError, OSError):
+                dirty = True
+            if dirty or directory.is_symlink():
+                report.warned = True
+                report.record(t("addonCheckSkipped", names=item["name"]), "warning")
+                continue
+            result = run_step(command, report)
+            if result == 130:
+                return result
+            status = status or result
+    return status
+
+
 def scan():
-    with ThreadPoolExecutor(max_workers=7) as pool:
+    with ThreadPoolExecutor(max_workers=9) as pool:
         jobs = [
             pool.submit(system),
             pool.submit(check, "AUR", "yay", "system", aur),
@@ -306,14 +401,16 @@ def scan():
             pool.submit(check, "flatpak-system", "flatpak", "flatpak-system", lambda: flatpak("--system")),
             pool.submit(check, "Snap", "snap", "snap", snap),
             pool.submit(appimages),
+            pool.submit(addon_row, "plugins"),
+            pool.submit(addon_row, "themes"),
         ]
-        packages, aur_row, mise_row, flatpak_user, flatpak_system, snap_row, images = (
+        packages, aur_row, mise_row, flatpak_user, flatpak_system, snap_row, images, plugins, themes = (
             job.result() for job in jobs
         )
     flatpak_rows = [flatpak_user, flatpak_system]
     if all(source["status"] == "missing" for source in flatpak_rows):
         flatpak_rows = [row("Flatpak", "missing")]
-    return [*packages, aur_row, mise_row, *flatpak_rows, snap_row, images]
+    return [*packages, aur_row, mise_row, *flatpak_rows, snap_row, plugins, themes, images]
 
 
 UPDATE_STEPS = (
@@ -472,6 +569,90 @@ class Report:
             print(styled(message, tone), flush=True)
 
 
+def filesystem_space(paths):
+    # Btrfs may report a different statvfs ID for each subvolume on one disk.
+    btrfs_mounts = {}
+    try:
+        for line in Path("/proc/self/mountinfo").read_text().splitlines():
+            mount, filesystem = line.split(" - ", 1)
+            fstype, source, _ = filesystem.split(maxsplit=2)
+            target = re.sub(r"\\([0-7]{3})", lambda code: chr(int(code[1], 8)), mount.split()[4])
+            btrfs_mounts[Path(target)] = source if fstype == "btrfs" else None
+    except OSError:
+        pass
+    free = {}
+    for path in paths:
+        try:
+            path = path.resolve()
+            space = os.statvfs(path)
+            source = next((btrfs_mounts[parent] for parent in (path, *path.parents)
+                           if parent in btrfs_mounts), None)
+            filesystem = ("btrfs", source) if source else ("statvfs", space.f_fsid)
+            if filesystem not in free:
+                free[filesystem] = space.f_bavail * space.f_frsize
+        except OSError:
+            continue
+    return free
+
+
+def disk_size(size):
+    amount = float(size)
+    for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
+        if amount < 1024 or unit == "TiB":
+            return f"{amount:.0f} B" if unit == "B" else f"{amount:.1f} {unit}"
+        amount /= 1024
+
+
+def cleanup_with_space(report):
+    data = Path(os.environ.get("XDG_DATA_HOME") or HOME / ".local/share")
+    cache = Path(os.environ.get("XDG_CACHE_HOME") or HOME / ".cache")
+    mise_data = Path(os.environ.get("MISE_DATA_DIR") or data / "mise")
+    mise_cache = Path(os.environ.get("MISE_CACHE_DIR") or cache / "mise")
+    paths = (Path("/"), HOME, Path("/var/cache/pacman/pkg"), Path("/var/lib/flatpak"),
+             data / "flatpak", data / "Trash", cache, mise_data, mise_cache,
+             *(path.parent for path in steam_libraries()))
+    before = filesystem_space(paths)
+    try:
+        return cleanup(report)
+    finally:
+        after = filesystem_space(paths)
+        common = before.keys() & after.keys()
+        if common:
+            freed = sum(after[device] - before[device] for device in common)
+            if freed > 0:
+                report.record(t("cli.cleanupFreed", size=disk_size(freed)), "success")
+            else:
+                report.record(t("cli.cleanupNoGain"))
+        else:
+            report.record(t("cli.cleanupSpaceUnknown"), "warning")
+
+
+def reboot_reason():
+    if (HOME / ".local/state/omarchy/reboot-required").is_file():
+        return "cli.rebootOmarchy"
+    modules = Path(os.environ.get("OMARCHY_KERNEL_MODULES_PATH") or "/usr/lib/modules")
+    installed = []
+    for marker in modules.glob("*/modules.builtin"):
+        try:
+            query(["pacman", "-Qo", str(marker)])
+            installed.append(marker.parent.name)
+        except (OSError, ValueError):
+            continue
+    if installed and os.uname().release not in installed:
+        return "cli.rebootKernel"
+    try:
+        pids = query(["pgrep", "-x", "Hyprland"], (0, 1)).split()
+        for pid in pids:
+            try:
+                if os.readlink(f"/proc/{pid}/exe").endswith(" (deleted)"):
+                    return "cli.rebootHyprland"
+            except OSError:
+                continue
+    except (OSError, ValueError):
+        return "cli.rebootUnknown"
+    return "cli.rebootNotNeeded" if installed else "cli.rebootUnknown"
+
+
 def apply():
     lock_path = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
     with (lock_path / "omaupdate.lock").open("a") as lock:
@@ -482,25 +663,32 @@ def apply():
             return 1
         report = Report()
         status = 0
+        system_updated = False
         try:
             for command, _, manager in UPDATE_STEPS:
                 result = run_step(command, report, manager)
+                if manager == "omarchy":
+                    system_updated = result == 0 and bool(shutil.which("omarchy"))
                 if result == 130:
                     status = result
                     break
                 status = status or result
+            if status != 130:
+                status = update_addons(report) or status
             if status:
                 message = t("cli.cleanupSkipped")
                 print("\n" + styled(message, "warning"))
                 report.record(message, "warning")
             else:
-                status = cleanup(report)
+                status = cleanup_with_space(report)
         except KeyboardInterrupt:
             report.record(t("cli.summaryInterrupted", step=report.current or t("cli.cleanupHeading")), "warning")
             status = 130
         except Exception as error:
             report.record(t("cli.commandError", error=error), "error")
             status = 1
+        reason = reboot_reason() if system_updated else "cli.rebootSystemUnfinished"
+        report.record(t(reason), "success" if reason == "cli.rebootNotNeeded" else "warning")
         report.finish(status)
         report.display()
         return status
@@ -814,6 +1002,7 @@ def confirm_update():
     for command, description, _ in UPDATE_STEPS:
         print(f"\n{indent}{accent}›{reset} {bold}{' '.join(command)}{reset}")
         print(textwrap.fill(t(description), width=columns, initial_indent="    ", subsequent_indent="    "))
+    print("\n" + textwrap.fill(t("cli.planAddons"), width=columns, initial_indent=indent, subsequent_indent=indent))
     print(textwrap.fill(
         t("cli.afterUpdate"),
         width=columns, initial_indent=indent, subsequent_indent=indent,

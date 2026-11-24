@@ -2,15 +2,18 @@
 
 A status-bar update manager for **Omarchy**. It compares installed and available versions, highlights changed version segments, and opens a floating terminal for updates.
 
-![OmaUpdate in Base, Glass and Blur](preview.jpg)
+![ElMeGGa OmaUpdate con su panel y funciones principales](preview.jpg)
 
-*Panels rendered from the plugin with sample data and the Rubí OLED palette. The background blur is simulated in the preview.*
+*The previews use sample data and the Rubí OLED palette. The appearance comparison simulates the backdrop blur.*
+
+[Compare Base, Glass and Blur](docs/appearance-finishes.webp) · [ElMeGGa OmaDesktop](https://github.com/megga-ernesto/ElMeGGa-OmaDesktop)
 
 ## Features
 
 - Check Arch and AUR packages, mise tools, Flatpak applications and runtimes, and Snap packages. AppImages appear in a separate local inventory.
 - Compare installed and available versions, highlight the changed segments, and flag recognized kernel, graphics and core system packages.
 - Scan on demand or on a schedule from 30 minutes to 24 hours.
+- Compare Git revisions of installed Omarchy plugins and themes. Review and confirm their updates separately.
 - Review a plan in a floating terminal, apply updates, and review optional cleanup. Access the last saved report using `omaupdate --last-run`.
 - See available, up-to-date, unavailable or failed sources and open installation prompts for supported missing tools.
 
@@ -60,10 +63,12 @@ omaupdate --last-run
 
 - The widget scans pacman with `checkupdates` (`pacman-contrib`), AUR with `yay`, and mise with `mise`. Flatpak and Snap are queried when their tools are installed. AppImage support is a local inventory only.
 - **Update** presents a plan before running Flatpak user and system updates, Snap refresh, and `omarchy update`. Omarchy handles pacman, AUR, mise, and its own migrations. Missing managers are reported and processing continues.
+- Git-installed plugins use Omarchy's `omarchy plugin update` command. For Git-installed themes, OmaUpdate fast-forwards the tracked branch without merging divergent histories. Local folders without a Git checkout are managed manually. Reapply your theme if you want to load the new files into the current session.
 - **Install** offers the relevant Omarchy package command for a missing manager. Installing Snap uses AUR and enables the snapd socket. Install and update commands can ask for administrator privileges in the terminal.
 - Cleanup is offered after the update commands finish without errors. It can prune older pacman cache entries, remove unused Flatpak references, and clear mise caches or remove unused tool versions. Local Steam libraries are only offered for review when Steam appears to be absent. Moving a library to the Trash and permanently emptying the Trash are separate choices.
 - The interactive selector uses Gum when available. **Yes** is highlighted by default for updates and other prompts. **No** is highlighted when permanently emptying the Trash. Use the arrow keys to change the selection before pressing Enter.
 - The panel follows the language set in Omarchy, and the terminal follows the session locale. Both include English and Spanish translations. The last update report is saved to `${XDG_STATE_HOME:-$HOME/.local/state}/omaupdate/last-run.txt`.
+- The final report shows the approximate net space gained during cleanup. Concurrent disk activity and snapshots can affect that measurement. The reboot status checks Omarchy's pending marker, the installed kernels and the running Hyprland executable.
 
 The plugin is an independent community project. It uses Omarchy and the selected package managers on the local machine. Its own code does not send the update report to a remote service.
 

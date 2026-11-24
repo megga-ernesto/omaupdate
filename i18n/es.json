@@ -113,5 +113,20 @@
   "oma.blurFailed": "Se muestra cristal. El desenfoque de Hyprland no está disponible.",
   "oma.settings": "Ajustes",
   "oma.closeSettings": "Cerrar ajustes",
-  "oma.appearance": "Apariencia"
+  "oma.appearance": "Apariencia",
+  "source.plugins": "Plugins de Omarchy",
+  "source.themes": "Temas de Omarchy",
+  "unmanaged": "Sin instalaciones gestionadas por Git",
+  "addonCheckSkipped": "Sin comprobación o con cambios locales: {names}",
+  "cli.planAddons": "Si hay actualizaciones de temas o plugins instalados con Git, podrás revisar la lista y decidir si aplicarlas.",
+  "cli.addonsConfirm": "¿Actualizar {source}?",
+  "cli.cleanupFreed": "Espacio libre neto tras la limpieza · {size} aprox.",
+  "cli.cleanupNoGain": "Espacio libre tras la limpieza · sin aumento neto medible.",
+  "cli.cleanupSpaceUnknown": "No se pudo medir el espacio libre tras la limpieza.",
+  "cli.rebootOmarchy": "Reinicio recomendado · Omarchy tiene un reinicio pendiente.",
+  "cli.rebootKernel": "Reinicio recomendado · el kernel en uso ya no coincide con los kernels instalados.",
+  "cli.rebootHyprland": "Reinicio recomendado · se actualizó el ejecutable de Hyprland que está en uso.",
+  "cli.rebootNotNeeded": "Reinicio · no se detectó que sea necesario.",
+  "cli.rebootUnknown": "Reinicio · no se pudo determinar si es necesario.",
+  "cli.rebootSystemUnfinished": "Reinicio · comprueba el resultado de la actualización de Omarchy antes de reiniciar."
 }

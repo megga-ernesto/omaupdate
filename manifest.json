@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "id": "elmegga.omaupdate",
   "name": "ElMeGGa OmaUpdate",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "ElMeGGa",
-  "description": "Scan, compare, and apply Omarchy, Arch, AUR, mise, Flatpak, and Snap updates from the bar.",
+  "description": "Scan and apply system updates and compare Git-installed Omarchy themes and plugins.",
   "kinds": [
     "bar-widget"
   ],
@@ -17,5 +17,6 @@
     "category": "System",
     "allowMultiple": false,
     "defaultSection": "center"
-  }
+  },
+  "license": "MIT"
 }
